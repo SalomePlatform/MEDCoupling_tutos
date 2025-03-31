@@ -114,7 +114,7 @@ First version of MEDCoupling
 
 **Almost 15 years of development**
 
-## What does `MED` means, in "MEDCoupling" ?
+## What does `MED` mean, in "MEDCoupling" ?
 
 ### **Modèle d'Échange de Données**, various projects
 
