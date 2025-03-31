@@ -75,6 +75,7 @@ mobm2.writeVTK("mobm2.vtu")
 
 # Faire une petite méthode `displayVTK()`, faisant le travail qui nous servira souvent après.
 
+
 def displayVTK(m, fname):
     tmp = m.deepCopy()
     tmp.tessellate2D(0.1)

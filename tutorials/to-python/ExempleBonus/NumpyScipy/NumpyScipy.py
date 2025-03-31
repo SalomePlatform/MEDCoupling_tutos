@@ -16,7 +16,7 @@
 #
 # [NumPy](https://numpy.org/doc/stable/user/quickstart.html) est un package additionnel de python qui permet de manipuler des tableaux de manière optimisée. Il s’agit d’un prérequis optionnel de `MEDCoupling`.
 #
-# NumPy est une passerelle vers le HPC Python (multiprocessing, pyCUDA, SciPy…) qui offre de puissantes fonctions de calcul vectoriel. `MEDCoupling` est capable d'interagir avec `NumPy`. 
+# NumPy est une passerelle vers le HPC Python (multiprocessing, pyCUDA, SciPy…) qui offre de puissantes fonctions de calcul vectoriel. `MEDCoupling` est capable d'interagir avec `NumPy`.
 #
 # `SciPy` est aussi un package de python nécessitant `NumPy`. Il s’agit également d’un prérequis optionnel de MEDCoupling. `SciPy` offre , entre autres, des services d’algèbre linéaire et de transformé de Fourrier.
 #
@@ -26,6 +26,7 @@
 # Pour commencer l’exercice importer le module Python `medcoupling`:
 
 import medcoupling as mc
+from MEDCouplingRemapper import MEDCouplingRemapper
 import numpy as np
 import gc
 
@@ -145,8 +146,6 @@ skinAndNCFaces.zipCoords()
 # OK maintenant on va séparer les cellules de bord des cellules non conformes grâce au `MEDCouplingRemapper`. Interpolons `skinAndNCFaces` sur lui-même. On acceptera un écart entre face de `1.0e-12` et un warping maximal de `0.01`.
 
 # +
-from MEDCouplingRemapper import MEDCouplingRemapper
-
 rem = MEDCouplingRemapper()
 rem.setMaxDistance3DSurfIntersect(1e-12)
 rem.setMinDotBtwPlane3DSurfIntersect(0.99)

@@ -4,14 +4,14 @@
 #
 # `DataArray` (`DataArrayInt` and `DataArrayDouble`) are used in MEDCoupling to store values as contiguous arrays in memory. Values are grouped by tuples, and each tuple has the same number of components. They form the basis of many operations performed in MEDCoupling. Therefore, it is important to know how to manipulate them effectively.
 #
-# `DataArrayDouble` is often used for the direct manipulation of field values, as we will see later on. 
+# `DataArrayDouble` is often used for the direct manipulation of field values, as we will see later on.
 #
 # `DataArrayInt`, on the other hand, is used for the manipulation of cell and point identifiers.
 
 #
 # ### Summary
 #
-# The objective of this exercise is to become familiar with manipulating `DataArray`. 
+# The objective of this exercise is to become familiar with manipulating `DataArray`.
 #
 # The task is to create a mesh containing 4 adjacent squares.
 #
@@ -28,14 +28,14 @@
 # The concepts covered in this exercise are:
 #
 # - Creating an instance of `DataArrayDouble`
-# - Displaying an instance of `DataArrayDouble` and invoking the `getValue()` method to convert it to a list 
+# - Displaying an instance of `DataArrayDouble` and invoking the `getValue()` method to convert it to a list
 # - Using "slice" type notations such as `da[:,:]`
 # - Learning about renumbering (old-2-new convention)
 # - Invoking services such as `findCommonTuples()`
 # - Creating a `UMesh` (unstructured mesh)
 
 #
-# ### Importing MEDCoupling 
+# ### Importing MEDCoupling
 #
 # It is necessary to import the Python module `medcoupling` to use its functionalities. We use the alias `mc` so that we don't have to rewrite `medcoupling` every time we call a function.
 #
@@ -45,7 +45,7 @@
 # - all enumerations (for example, standard cell types: `mc.ON_CELLS`, `mc.ON_NODES`, `mc.ONE_TIME`...)
 # - all static methods
 #
-# The native Python module `math` is also imported to perform trigonometric manipulations. 
+# The native Python module `math` is also imported to perform trigonometric manipulations.
 
 import medcoupling as mc
 import math
@@ -188,10 +188,10 @@ print(squares_da)
 
 # ### Finding equal tuples
 #
-# In the `DataArray` constructed previously, some tuples are identical. It is necessary to detect the equal tuples to avoid creating duplicate nodes. To find equal tuples, we use `findCommonTuples()`. To compare two tuples of floating point numbers with each other, this function takes an absolute tolerance as an argument. 
+# In the `DataArray` constructed previously, some tuples are identical. It is necessary to detect the equal tuples to avoid creating duplicate nodes. To find equal tuples, we use `findCommonTuples()`. To compare two tuples of floating point numbers with each other, this function takes an absolute tolerance as an argument.
 
 # **Note:**
-# You can use `help(mc.DataArrayDouble.findCommonTuples)` to get information on how to use this function's interface. 
+# You can use `help(mc.DataArrayDouble.findCommonTuples)` to get information on how to use this function's interface.
 
 # +
 print("number of tuples: ", squares_da.getNumberOfTuples())
