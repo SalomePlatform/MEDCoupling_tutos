@@ -26,20 +26,18 @@ date: 08-03-2024
 
 ## MEDLoader, not only a "loader"
 
-- Why do we need a loader ?
-  - Communicate between processes / tools
-  - Write / read results files
-- **Read/write** meshes and fields
-- Target `MED` and `VTK` (partial) formats
-- Distinct from MEDCoupling-core
+- **Read/write** meshes and fields from/to **files**
+- Target `MED` and `VTK (write only)` formats
+- Distinct from core functionnalities of the MEDCoupling library
 - Dependencies
-  - MEDfile library (low level C/Fortran API to manipulate MED files)
+  - MEDfile library (low level C/Fortran API, manipulate `.med` files)
   - HDF5
   - MPI (parallel only)
 
 ## MEDLoader Services
 
-- Read / write
+- Read/write in `MED` format
+- (limited) Write to `VTK` format
 - Geometric algorithms
   - `convertAllToPoly()`
   - `unPolyze()`
@@ -53,34 +51,34 @@ date: 08-03-2024
 
 ## Differences with MEDCoupling, more flexibility
 
-- **Warning:** `MEDFile<Something>` $\neq$ `MEDCoupling<Something>`
-  - `MEDCoupling<Something>` : user-friendly to use but less functionnalities
-- Capabilities of MED-file that are "restricted" in MEDCoupling:
-  - A _mesh_:
+- `MEDCoupling<Something>` **vs.** `MEDFile<Something>`
+  - user-friendly **vs.** capabilities
+- Capabilities that requires to use **MEDFile**:
+  - A **mesh**:
     - can have `groups` : named collection of entities
     - can have entities of various dimensions
-  - A _field_:
+  - A **field**:
     - can have `profiles` : definition only on a part of the mesh
-    - can have more than one spatial discretization (ON_CELLS, ON_NODES, ...)
-    - can have muSomethingltiple time-steps (`MEDCoupling` -> single step)
-    - tip: use multiple `MEDCouplingFieldDouble`
-    - tip: use `MEDCouplingFieldOverTime`
-- _Rule of thumb:_ try to do it with the `MEDCoupling` **first**
+    - can have multiple time-steps (`MEDCoupling` -> single step)
+    - can have more than one spatial discretization (`ON_CELLS`, `ON_NODES`, ...)
+  - Tips to stay with `MEDCoupling`:
+    - use multiple `MEDCouplingFieldDouble`
+    - use `MEDCouplingFieldOverTime`
+
+**Rule of thumb:** try to do it with the `MEDCoupling` **first**
 
 ## Differences with MEDCoupling, some constraints
 
-- "Objects" need to have a name
-  - _Mesh_ and _fields_ need to be named
-    - `setName()` method
-  - MED-file has a max length of `64` characters
-- _Cells_ need to be ordered by _geometric type_
-  - E.g. if you mix TRIA3 and QUAD4 in your mesh (sometimes called a hybrid mesh)
-  - Invoke `sortCellsInMEDFileFrmt()`
-  - Try to keep cell types ordered if you can (will avoid save/load time)
-  - Or convert everything to polyhedrons!
-    - `MEDCouplingUMesh::convertAllToPoly()`
-    - Only one cell type
-    - Can be converted back with `unPolyze()`
+- **Mesh** and **fields** are required to be **named** (e.g. `setName()`)
+  - With MEDfile, names have a max length of `64`
+- **Cells** need to be ordered by **geometric type**
+  - Use case: mix of `TRIA3` and `QUAD4` in a mesh ("hybrid mesh")
+  - Related method: `sortCellsInMEDFileFrmt()`
+  - Keeping cell types ordered avoids read/write time
+- Possible workaround: convert everything to **polyhedrons**
+  - Related method: `convertAllToPoly()`
+  - Only one cell type (polyhedron)
+  - Can be converted back with `unPolyze()`
 
 ## MEDFile - Mesh Dimension
 
@@ -105,7 +103,7 @@ date: 08-03-2024
 
 ### Simple VTK export
 
-- `VTK` export (`.vtu`)
+- `VTK` write
 
   ```python
   m = <some mesh/field I just created>
@@ -116,16 +114,18 @@ date: 08-03-2024
 
   ![A vtu mesh](../pictures/2-medloader/image23.png){ width=25% }
 
+- (read is not implemented)
+
 ## Basic API - Overview (2/2)
 
-### A step further -- the basic `MEDLoader` API
+### A step further - the basic `MEDLoader` API
 
-- reading/writing **a mesh** to a file
+- reading/writing a **mesh** to a file
   - `WriteMesh()` / `ReadMesh()`
-- reading/writing **a field**
+- reading/writing a **field**
   - `WriteField()` / `ReadField()`
   - `WriteFieldUsingAlreadyWrittenMesh()` (several fields, a single mesh)
-- **MEDCoupling objects** (e.g. `MEDCouplingUMesh`, ...) -> restrictions
+- **MEDCoupling objects** -> restrictions
 - User-friendly : no internal state, file reopened each time
 
 ## Basic API - Reading a multi-dimensional mesh
@@ -139,9 +139,7 @@ date: 08-03-2024
   mesh1D = mc.ReadUMeshFromFile("file.med", "mesh", -2)
   ```
 
-- Works fine, but:
-  - The 3 meshes have 3 **independent coordinate arrays**
-  - Could be **shared** –> see advanced API
+- Limitation: the 3 meshes have 3 **independent coordinate arrays**
 
 # Advanced API
 
@@ -149,12 +147,12 @@ date: 08-03-2024
 
 ### Use cases
 
-- Dealing with **multiple time-steps**
-- Dealing with **multiple mesh dimensions**
+- multiple time-steps
+- multiple mesh dimensions
   - example: a volumic mesh (`space dim == mesh dim == 3`)
   - with boundary conditions on the faces (`mesh dim = 2`)
   - The two mesh share the same `nodes`
-- Dealing with mesh **groups**
+- using **groups** (e.g. boundary conditions)
   - A group is a **named collection of cells**
   - Frequently used for **boundary conditions**
 - Dealing with partial support: **profiles**
@@ -171,10 +169,16 @@ date: 08-03-2024
 
 ### Writing a file
 
-- Three **write mode**:
-  - 2: force writing from scratch (an existing file will be reset)
-  - 1: append mode (no corruption risk if file already there).
-  - 0: overwrite mode: if the file and the MED object exist, they will be overwritten, otherwise write from scratch
+- Three **write modes**:
+  - `2`: force writing from scratch (an existing file will be reset)
+  - `1`: appends to existing file (no corruption risk if file already there).
+  - `0`: overwrite mode: if the file and the MED object exist, they will be overwritten, otherwise write from scratch
+
+- For example:
+  ```python
+  mesh: MEDFileUMesh
+  mesh.write("mesh.med", 2)
+  ```
 
 ### Reading a field (`MEDFileField1TS`, `MEDFileFieldMultiTS`)
 
@@ -236,25 +240,24 @@ mesh.write(medFile, 2)
 - Deal with families and groups
 - Deal with field profiles
 
-# Families and Groups
+## Groups
 
-## Groups and families definition
+- A group is a named collection of entities.
+- MEDLoader advanced API gives access to groups:
+  - `getGroups()`, ...
+- The underlying implementation of groups use the concept of families.
 
-### Families {.alert}
+## Families
 
 - **Families do not need to be manipulated directly in normal usage**
-- In a mesh cells are partitioned by _families_
-- Each cell has a unique family ID (reverse not true)
-- MEDLoader advanced API gives access to families
+- In a mesh cells are partitioned by **families**.
+- Each cell has a unique family ID (reverse not true).
+- Groups are in fact just a collection of families (not of cells).
+- MEDLoader advanced API gives access to families:
   - `getFamilies()`, `getFamiliesArr()`, ...
+- Families allow for efficient boolean operations between groups.
 
-### Groups
-
-- A group is a list of families
-- MEDLoader advanced API gives access to groups
-  - `getGroups()`, ...
-
-## Families and Groups - Illustration
+## Illustration
 
 ![Families and groups example](../pictures/2-medloader/image79.png){ width=25% }
 
@@ -265,42 +268,13 @@ Cells 0, 1, 4    Cells 2, 1
 
 Table: Families and cells associated to groups
 
-## Recording a Group
+## Time-steps
 
-### Example {.example}
+A **field** can have none, one, or multiple **time-step**. Each time-step is a triplet `(time, timestep, sub-timestep)`, where `timestep, sub-timestep` is a unique identifier of the timestep itself.
 
-```python
-myCouplingmesh = ...
+**WARNING:** `time` is just an annotation. It is not used to identify the time step.
 
-tabIdCells = mc.DataArrayInt()
-tabIdCells.setName("meshGroup")
-tabIdCells.setValues(...)
-
-mfum = mc.MEDFileUMesh()
-mfum.setName("Name")
-mfum.setDescription("description")
-mfum.setCoords(myCouplingmesh.getCoords())
-mfum.setMeshAtLevel(0, myCouplingmesh)
-mfum.setGroupsAtLevel(0, [tabIdCells])
-```
-
-## Reading a Group
-
-### Example {.example}
-
-```python
-mfum = mc.MEDFileUMesh(fname)
-gpNames  = mfum.getGroupsNames()
-# mc.DataArryInt
-myGroupArr = mfum.getGroupArr(0, gpNames[0])
-# mc.MEDCouplingUMesh
-myGroup = mfum.getGroup(0, gpNames[0])
-```
-
-Either get the result:
-
-- as a `DataArrayInt`
-- as a sub-mesh
+For example, writing a field at timestep `(4.54, 12, 3)` override the data written at timestep `(3.12, 12, 3)`.
 
 # Appendix
 
