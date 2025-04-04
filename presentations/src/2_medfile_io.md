@@ -6,10 +6,10 @@ date: 08-03-2024
 
 # Agenda
 
-- Overview of the MEDLoader, fundamental differences with MEDCoupling model
+- Overview of MEDLoader
 - Basic API
   - Quick export to VTU (visualization)
-  - Reading and writing a MED file
+  - Reading and writing a `.med` file
 - Advanced API
   - Some insights into the MED file format
   - Advanced concepts
@@ -26,56 +26,46 @@ date: 08-03-2024
 
 ## MEDLoader, not only a "loader"
 
-- Why do we need a loader/writer?
+- Why do we need a loader ?
   - Communicate between processes / tools
-  - Load / backup results
-- Very unfortunate name
-  - Can obviously read, but also write meshes and fields ...
-  - ... into a file with the MED type (".med" extension): "Modèle Echange de
-    Données" (Data Exchange Model)
-- Part of the MEDCoupling library, requires:
-  - MED-file library (currently version 3.0.8) to compile and run
-    - MED-file is the low level C/Fortran API to deal with MED files
-  - HDF5 (prerequisite of MED-file library)
-  - MPI if you’re working in parallel
-- You can use the core structures of MEDCoupling without MEDLoader
-  - The reverse does not work
-- Like before, most of it in C++, but wrapped in Python
-  - Most of the algorithms are actually pure MEDCoupling core
+  - Write / read results files
+- **Read/write** meshes and fields
+- Target `MED` and `VTK` (partial) formats
+- Distinct from MEDCoupling-core
+- Dependencies
+  - MEDfile library (low level C/Fortran API to manipulate MED files)
+  - HDF5
+  - MPI (parallel only)
 
 ## MEDLoader Services
 
 - Read / write
-- Groups manipulation
-  - A collection of entities on the mesh (volumes, faces, points ...)
 - Geometric algorithms
   - `convertAllToPoly()`
   - `unPolyze()`
   - `zipCoords()`
   - `duplicateNodes()`
   - ...
-- Those services often have a MEDCoupling equivalent
+- Groups manipulation
+  - A collection of entities on the mesh (volumes, faces, points ...)
 - MED file conversion tools
   - Between MED versions, from SAUV, ...
 
 ## Differences with MEDCoupling, more flexibility
 
-- **Warning:** `MEDFilexxx` $\neq$ `MEDCouplingxxx`
-  - MEDCoupling tries to rationalize the large flexibility provided by the
-    MED-file format
-  - Loosing some advanced functionalities, but more _user-friendly_
+- **Warning:** `MEDFile<Something>` $\neq$ `MEDCoupling<Something>`
+  - `MEDCoupling<Something>` : user-friendly to use but less functionnalities
 - Capabilities of MED-file that are "restricted" in MEDCoupling:
   - A _mesh_:
-    - can have multiple dimensions
-    - can have groups
+    - can have `groups` : named collection of entities
+    - can have entities of various dimensions
   - A _field_:
-    - can be defined only on a part of the mesh: "profiles"
+    - can have `profiles` : definition only on a part of the mesh
     - can have more than one spatial discretization (ON_CELLS, ON_NODES, ...)
-  - A MEDFile field can have multiple time-steps (`MEDCouplingFieldDouble` =
-    single step)
-    - Solution: use multiple `MEDCouplingFieldDouble`
-    - Solution: use `MEDCouplingFieldOverTime`
-- _Rule of thumb:_ try to do it with the `MEDCoupling` data model only
+    - can have muSomethingltiple time-steps (`MEDCoupling` -> single step)
+    - tip: use multiple `MEDCouplingFieldDouble`
+    - tip: use `MEDCouplingFieldOverTime`
+- _Rule of thumb:_ try to do it with the `MEDCoupling` **first**
 
 ## Differences with MEDCoupling, some constraints
 
@@ -113,9 +103,9 @@ date: 08-03-2024
 
 ## Basic API - Overview (1/2)
 
-### I need a quick look
+### Simple VTK export
 
-- `VTK`/`VTU` export
+- `VTK` export (`.vtu`)
 
   ```python
   m = <some mesh/field I just created>
@@ -130,13 +120,13 @@ date: 08-03-2024
 
 ### A step further -- the basic `MEDLoader` API
 
-- Directly reading/writing a mesh to a file on disk
+- reading/writing **a mesh** to a file
   - `WriteMesh()` / `ReadMesh()`
-- Directly reading/writing a field
+- reading/writing **a field**
   - `WriteField()` / `ReadField()`
-  - `WriteFieldUsingAlreadyWrittenMesh()` if you have several fields on a single mesh
-- All dealing with MEDCoupling objects (e.g. MEDCouplingUMesh, ...)
-- Only static methods (i.e. no internal state). File reopened each time!
+  - `WriteFieldUsingAlreadyWrittenMesh()` (several fields, a single mesh)
+- **MEDCoupling objects** (e.g. `MEDCouplingUMesh`, ...) -> restrictions
+- User-friendly : no internal state, file reopened each time
 
 ## Basic API - Reading a multi-dimensional mesh
 
@@ -144,16 +134,14 @@ date: 08-03-2024
 
   ```python
   import medcoupling as mc
-  medFile = 'file.med'
-  meshName = 'mesh'
-  mesh3D = mc.ReadUMeshFromFile(medFile, meshName, 0)
-  mesh2D = mc.ReadUMeshFromFile(medFile, meshName, -1)
-  mesh1D = mc.ReadUMeshFromFile(medFile, meshName, -2)
+  mesh3D = mc.ReadUMeshFromFile("file.med", "mesh", 0)
+  mesh2D = mc.ReadUMeshFromFile("file.med", "mesh", -1)
+  mesh1D = mc.ReadUMeshFromFile("file.med", "mesh", -2)
   ```
 
 - Works fine, but:
-  - The 3 meshes have 3 independent coordinate arrays
-  - Could be _shared_ – see later slide on mesh dimension ...
+  - The 3 meshes have 3 **independent coordinate arrays**
+  - Could be **shared** –> see advanced API
 
 # Advanced API
 
@@ -161,21 +149,21 @@ date: 08-03-2024
 
 ### Use cases
 
-- Dealing with _multiple time-steps_
-- Dealing with _multiple mesh dimensions_
-  - Typically a volumic mesh (`space dim == mesh dim == 3`)
-  - And some boundary conditions on the faces (`mesh dim = 2`)
+- Dealing with **multiple time-steps**
+- Dealing with **multiple mesh dimensions**
+  - example: a volumic mesh (`space dim == mesh dim == 3`)
+  - with boundary conditions on the faces (`mesh dim = 2`)
   - The two mesh share the same `nodes`
-- Dealing with mesh _groups_
-  - A group is a named set of cells in a given mesh
-  - Frequently used for _boundary conditions assignment_
-- Dealing with partial support (rare case): _profiles_
+- Dealing with mesh **groups**
+  - A group is a **named collection of cells**
+  - Frequently used for **boundary conditions**
+- Dealing with partial support: **profiles**
 
 ## Advanced API – Class diagramm
 
 ### Helps navigate the advanced API
 
-- All names prefixed with `%` actually start with `MEDFile` (e.g. `MEDFileData`)
+- Here, `%` is shortcut for `MEDFile` (e.g. `%Data` -> `MEDFileData`)
 
 ![Links with the `MEDCoupling` data model](../pictures/2-medloader/image55.png)
 
@@ -183,14 +171,14 @@ date: 08-03-2024
 
 ### Writing a file
 
-- Write options:
+- Three **write mode**:
   - 2: force writing from scratch (an existing file will be reset)
   - 1: append mode (no corruption risk if file already there).
   - 0: overwrite mode: if the file and the MED object exist, they will be overwritten, otherwise write from scratch
 
 ### Reading a field (`MEDFileField1TS`, `MEDFileFieldMultiTS`)
 
-- Read _everything_ in the file by default
+- Read **everything** in the file by default
 - For large size fields:
   - Set the boolean `loadAll` to `False` in constructors
   - Use  `loadArrays()`  or  `loadArraysIfNecessary()` to load data on demand
@@ -236,7 +224,7 @@ mesh.write(medFile, 2)
 
 ### Basic API is well suited for
 
-- Meta information of a MED-file, without loading everything
+- Get meta-info of a MED-file, without loading everything
   - E.g.: `GetMeshNames`, `GetComponentsNamesOfField`, `GetFieldIterations`
 - Reading / Writing single instances of MEDCoupling objects
 - Reading / Writing MEDCoupling meshes (without groups nor families)
@@ -254,7 +242,7 @@ mesh.write(medFile, 2)
 
 ### Families {.alert}
 
-- **Families do not need to be manipulated directly in normal usage !**
+- **Families do not need to be manipulated directly in normal usage**
 - In a mesh cells are partitioned by _families_
 - Each cell has a unique family ID (reverse not true)
 - MEDLoader advanced API gives access to families
@@ -313,13 +301,6 @@ Either get the result:
 
 - as a `DataArrayInt`
 - as a sub-mesh
-
-# Conclusion
-
-## Conclusion
-
-- Any question ?
-- Let's get ready for the exercises!
 
 # Appendix
 
