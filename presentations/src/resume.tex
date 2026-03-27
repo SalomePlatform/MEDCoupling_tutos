@@ -1,0 +1,337 @@
+\begin{frame}{0. Architecture C++ / Interface Python et ouverture du
+code}
+\protect\hypertarget{architecture-c-interface-python-et-ouverture-du-code}{}
+\begin{block}{\textbf{Base C++}}
+\protect\hypertarget{base-c}{}
+\begin{itemize}
+\tightlist
+\item
+  Performances élevées pour les opérations lourdes sur les maillages.
+\item
+  Intégration naturelle avec les codes de calcul existants.
+\item
+  Gestion fine de la mémoire, adaptée au HPC.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Interface Python}}
+\protect\hypertarget{interface-python}{}
+\begin{itemize}
+\tightlist
+\item
+  Utilisation quotidienne simple pour les études, le pré/post-traitement
+  et le prototypage.
+\item
+  Accès direct aux structures C++ sans perte de performance sur les
+  calculs.
+\item
+  Intégration facile dans les workflows Python déjà largement utilisés.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Ouverture du code}}
+\protect\hypertarget{ouverture-du-code}{}
+\begin{itemize}
+\tightlist
+\item
+  Code open source, facile à intégrer dans des projets variés du CEA ou
+  en collaboration externe (EdF).
+\item
+  Transparence sur les algorithmes, possibilité d'amélioration
+  collaborative.
+\item
+  Favorise la pérennité et la mutualisation entre équipes.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Intérêt dans les projets}}
+\protect\hypertarget{intuxe9ruxeat-dans-les-projets}{}
+\begin{itemize}
+\tightlist
+\item
+  À destination de développeurs de pré-pro complexes construits en
+  python (comethe pour Flica5, Apollo)
+\item
+  À destination de développeurs de codes de calcul pour des besoins
+  avancés (TRUST, Apollo pour le couplage)
+\item
+  il ne s'agit pas d'un outil disponible avec une interface graphique
+  pour un utilisateur qui réalise des études.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{1. Génération procédurale et manipulation de maillages}
+\protect\hypertarget{guxe9nuxe9ration-procuxe9durale-et-manipulation-de-maillages}{}
+MEDCoupling fournit un ensemble d'outils permettant de créer,
+transformer et analyser des maillages. Ces fonctionnalités couvrent les
+besoins classiques des outils de pré/post-traitement pour plusieurs
+physiques (thermo-hydraulique, mécanique, neutronique).
+
+\begin{block}{Principales capacités}
+\protect\hypertarget{principales-capacituxe9s}{}
+\begin{block}{\textbf{Construction automatique de maillages}}
+\protect\hypertarget{construction-automatique-de-maillages}{}
+\begin{itemize}
+\tightlist
+\item
+  maillages cartésiens et extrudés (1D, 2D, 3D) ;
+\item
+  maillages non structurés (triangles, quadrangles, tétraèdres,
+  hexaèdres, polyèdres)
+\item
+  génération programmatique à partir de lignes, contours, surfaces ou
+  volumes.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Opérations de modification}}
+\protect\hypertarget{opuxe9rations-de-modification}{}
+\begin{itemize}
+\tightlist
+\item
+  concaténation, aggrégation, conformisation
+\item
+  transformations géométriques (translation, rotation, déformation).
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Opérations géométriques avancées}}
+\protect\hypertarget{opuxe9rations-guxe9omuxe9triques-avancuxe9es}{}
+\begin{itemize}
+\tightlist
+\item
+  calcul d'intersections (2D/2D, 3D/plan, etc) entre maillages ;
+\item
+  localisation de points ;
+\item
+  calcul de volumes, surfaces, centres de gravité.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Gestion des champs}}
+\protect\hypertarget{gestion-des-champs}{}
+\begin{itemize}
+\tightlist
+\item
+  définition de champs nodaux (P1) ou cellulaires (P0) ;
+\item
+  support des champs intensifs/extensifs ;
+\item
+  prise en charge du temps et de l'évolution transitoire.
+\end{itemize}
+\end{block}
+
+\begin{block}{\textbf{Export direct en VTK (format standard de
+maillage)}}
+\protect\hypertarget{export-direct-en-vtk-format-standard-de-maillage}{}
+\begin{itemize}
+\tightlist
+\item
+  pour la visualisation ou le post-traitement.
+\end{itemize}
+\end{block}
+\end{block}
+
+\begin{block}{Intérêt pour les projets}
+\protect\hypertarget{intuxe9ruxeat-pour-les-projets}{}
+\begin{itemize}
+\tightlist
+\item
+  Permet de remplacer des scripts hétérogènes par une API python
+  unifiée.
+\item
+  Propose des algorithmes efficaces en C++.
+\item
+  Offre une base commune entre équipes simulation, CFD, mécanique,
+  neutronique, etc.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{2. Interface avec la librairie MED (EDF) pour la
+lecture/écriture}
+\protect\hypertarget{interface-avec-la-librairie-med-edf-pour-la-lectureuxe9criture}{}
+MEDLoader est un module qui repose sur la bibliothèque MED développée
+par EDF. Son rôle est de fournir une couche facilitant la
+\textbf{conversion des données MED vers les objets internes de
+MEDCoupling} et réciproquement. Il s'agit d'un outil de traduction entre
+deux représentations différentes : la représentation du format MED et la
+représentation interne simplifiée utilisée par MEDCoupling.
+
+\begin{block}{Fonctionnalités principales}
+\protect\hypertarget{fonctionnalituxe9s-principales}{}
+MEDLoader expose une interface permettant :
+
+\begin{itemize}
+\tightlist
+\item
+  la lecture et l'écriture de maillages, champs, groupes, familles et
+  profils,
+\item
+  la gestion du multi-pas de temps tel que défini dans le format MED,
+\item
+  l'écriture incrémentale (append),
+\item
+  la prise en charge des maillages multi-niveaux (maillage 3D, maillage
+  de faces, maillage d'arêtes partageant les mêmes coordonnées),
+\end{itemize}
+
+Ces opérations reposent sur la conversion des données issues de MED vers
+les structures MEDCoupling plus simples (DataArray, Mesh, Field), ce qui
+facilite ensuite les manipulations géométriques ou les projections.
+\end{block}
+
+\begin{block}{Concepts manipulés}
+\protect\hypertarget{concepts-manipuluxe9s}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Groupes} : ensembles nommés de cellules ou entités, souvent
+  utilisés pour les conditions limites.
+\item
+  \textbf{Familles} : mécanisme interne du format MED permettant
+  d'encoder la composition des groupes.
+\item
+  \textbf{Profils} : sous-ensembles d'indices, permettant de restreindre
+  un champ à une partie du maillage.
+\end{itemize}
+\end{block}
+
+\begin{block}{Intérêt pour les projets}
+\protect\hypertarget{intuxe9ruxeat-pour-les-projets-1}{}
+\begin{itemize}
+\tightlist
+\item
+  Permet de réutiliser les structures MEDCoupling dans des workflows où
+  le stockage se fait en format MED.
+\item
+  Facilite la mise en place de chaînes de traitement impliquant
+  MEDCoupling (manipulations géométriques, projections,
+  transformations).
+\item
+  Garantit la compatibilité avec les outils de visualisation habituels,
+  notamment via l'export VTK.
+\item
+  Sert d'intermédiaire lorsqu'un code ou script doit convertir des
+  données MED vers un format directement exploitable dans MEDCoupling.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{3. Couplage de codes (séquentiel et parallèle)}
+\protect\hypertarget{couplage-de-codes-suxe9quentiel-et-paralluxe8le}{}
+MEDCoupling offre des outils dédiés au \textbf{transfert de champs entre
+codes}, que ce soit en mode séquentiel ou via MPI en parallèle.
+
+Ces outils sont essentiels dans les couplages multiphysiques
+(neutronique - thermique, fluide - thermique, fluide - structure, etc.),
+en particulier lorsque les codes utilisent des maillages différents.
+
+\begin{block}{3.1 Couplage séquentiel (Remapper)}
+\protect\hypertarget{couplage-suxe9quentiel-remapper}{}
+Le \textbf{Remapper} assure la projection de champs entre maillages,
+même de nature très différente.
+
+\begin{block}{Fonctionnement général}
+\protect\hypertarget{fonctionnement-guxe9nuxe9ral}{}
+\begin{enumerate}
+\tightlist
+\item
+  \textbf{Préparation} : construction de la correspondance géométrique
+  entre maillage source et maillage cible.
+\item
+  \textbf{Transfert} : application d'une projection conservatrice ou
+  non, selon la nature du champ.
+\end{enumerate}
+\end{block}
+
+\begin{block}{Choix de la nature du champ}
+\protect\hypertarget{choix-de-la-nature-du-champ}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Intensive} : indépendantes de la maille (température,
+  vitesse).
+\item
+  \textbf{Extensive} : proportionnelles au volume/aire (énergie, masse).
+\item
+  Modes : \emph{conservation}, \emph{maximum}, \emph{moyenne} selon les
+  besoins physiques.
+\end{itemize}
+\end{block}
+
+\begin{block}{Compatibilité}
+\protect\hypertarget{compatibilituxe9}{}
+\begin{itemize}
+\tightlist
+\item
+  Maillages structurés, non structurés ou extrudés.
+\item
+  Dimensions 1D, 2D, 3D et surfaces 2D dans un espace 3D.
+\item
+  Champs P0, P1 ou points de Gauss.
+\end{itemize}
+\end{block}
+\end{block}
+
+\begin{block}{3.2 Couplage parallèle (DEC / ParaMEDMEM)}
+\protect\hypertarget{couplage-paralluxe8le-dec-paramedmem}{}
+Pour les applications HPC, MEDCoupling gère le transfert de champs entre
+codes parallèles via \textbf{Data Exchange Channels (DEC)}.
+
+\begin{block}{Principes de fonctionnement}
+\protect\hypertarget{principes-de-fonctionnement}{}
+\begin{itemize}
+\tightlist
+\item
+  Échange des boîtes englobantes entre processus MPI.
+\item
+  Détermination des sous-domaines qui se recoupent.
+\item
+  Calcul des projections localement, sans reconstituer le maillage
+  global.
+\item
+  Construction distribuée de la matrice de transfert.
+\item
+  Communication optimisée pour minimiser les échanges inter-processus.
+\end{itemize}
+\end{block}
+
+\begin{block}{Intérêt pour les projets}
+\protect\hypertarget{intuxe9ruxeat-pour-les-projets-2}{}
+\begin{itemize}
+\tightlist
+\item
+  Permet le couplage performant de codes massivement parallèles.
+\item
+  Évite la duplication des maillages complets sur chaque processus.
+\item
+  Maintient la cohérence du transfert même sur des domaines fortement
+  découpés.
+\end{itemize}
+\end{block}
+\end{block}
+\end{frame}
+
+\begin{frame}{Conclusion}
+\protect\hypertarget{conclusion}{}
+\begin{itemize}
+\tightlist
+\item
+  Outil central pour plusieurs projets de simulation au CEA.
+\item
+  Noyau C++ performant et interface Python favorable au développement
+  rapide.
+\item
+  Approche open source facilitant l'intégration et la collaboration.
+\item
+  Large éventail de fonctionnalités : génération, manipulation et
+  analyse de maillages.
+\item
+  Socle commun pour les chaînes de pré/post-traitement.
+\item
+  Outils indispensable pour le transfert de champs et le couplage
+  multiphysique, en séquentiel comme en parallèle.
+\end{itemize}
+\end{frame}
