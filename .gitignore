@@ -11,3 +11,5 @@
 presentations/build/*
 !presentations/build/Makefile
 **/.~lock*
+**/__pycache__
+**/*.egg-info
