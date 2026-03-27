@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "jupyterlab>=4.3.5",
+    "medcoupling>=9.15.0",
     "numpy<2",
+    "pyvista[jupyter]>=0.47.1",
     "scipy>=1.15.2",
 ]
 
