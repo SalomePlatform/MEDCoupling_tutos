@@ -24,7 +24,7 @@ MC_DIM = {
     mc.NORM_SEG3: 1,
     mc.NORM_TETRA4: 3,
     mc.NORM_POLYGON: 2,
-    mc.NORM_QPOLYG: 2,
+    mc.NORM_QPOLYG: 3,  # only UnstructuredGrid
     mc.NORM_POLYHED: 3,
 }
 
@@ -126,10 +126,16 @@ def to_pv(
     permut = mesh.sortCellsInMEDFileFrmt()
 
     coords = np.array(mesh.getCoords().toNumPyArray())
-    if coords.shape[1] == 3:
+    coords = np.c_[coords, np.zeros((coords.shape[0], 3 - coords.shape[1]))]
+
+    offsets = mesh.getNodalConnectivityIndex().toNumPyArray()
+    connectivity = np.array(mesh.getNodalConnectivity().toNumPyArray())
+    last_cell_type = connectivity[offsets[-2]]
+    max_type = MC_DIM[last_cell_type]
+
+    if max_type == 3:
         pv_mesh = _to_unstructured(mesh, coords)
-    elif coords.shape[1] < 3:
-        coords = np.c_[coords, np.zeros((coords.shape[0], 3 - coords.shape[1]))]
+    elif max_type < 3:
         pv_mesh = _to_polydata(mesh, coords)
     else:
         raise Exception(f"The coords shape is not valid: {coords.shape=}")
