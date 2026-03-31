@@ -29,19 +29,32 @@ MC_DIM = {
 }
 
 
-def _mc_ph_to_vtk(cell_co: np.ndarray) -> np.ndarray:
-    seps = np.flatnonzero(cell_co == -1)
-    seps = np.r_[0, seps, len(cell_co)]
-    faces = [
-        np.r_[f_end - f_start - 1, cell_co[f_start + 1 : f_end]]
-        for f_start, f_end in zip(seps[:-1], seps[1:])
-    ]
+def _mc_ph_to_vtk_fast(connectivity: np.ndarray, offsets: np.ndarray) -> np.ndarray:
+    if len(connectivity) == 0:
+        return np.array([], dtype=int)
+    cell_length = offsets[1:] - offsets[:-1]
+    face_delims = connectivity == -1  # all face seperator
+    face_delims[offsets[:-1]] = True  # all cell seperator
 
-    vtk_co = np.r_[*faces]
-    assert sum(f[0] for f in faces) + len(faces) == len(vtk_co)
+    face_offsets = np.r_[np.flatnonzero(face_delims), len(connectivity)]
 
-    res = np.r_[len(vtk_co) + 1, len(faces), vtk_co]
-    return res
+    # Compute number of face per cell
+    cell_delim_in_face_offsets = face_offsets.searchsorted(offsets)
+    num_faces = cell_delim_in_face_offsets[1:] - cell_delim_in_face_offsets[:-1]
+
+    # Replace -1 and cell_type with face length
+    face_length = face_offsets[1:] - face_offsets[:-1] - 1
+    connectivity[face_delims] = face_length
+
+    inds = np.empty((2 * len(cell_length),), dtype=int)
+    inds[::2] = offsets[:-1]
+    inds[1::2] = offsets[:-1]
+
+    vals = np.empty((2 * len(cell_length),), dtype=int)
+    vals[::2] = cell_length + 1
+    vals[1::2] = num_faces
+
+    return np.insert(connectivity, obj=inds, values=vals)
 
 
 def _to_unstructured(
@@ -74,16 +87,10 @@ def _to_unstructured(
     connectivity_npr[cell_types_idx[ind_r:]] = cell_length[ind_r:]
 
     # Polyhedron case
-    phs = [
-        _mc_ph_to_vtk(connectivity[cell_start:cell_end])
-        for cell_start, cell_end in zip(
-            offsets[ind_l:ind_r], offsets[ind_l + 1 : ind_r + 1]
-        )
-    ]
-    if len(phs) > 0:
-        connectivity_ph = np.r_[*phs]
-    else:
-        connectivity_ph = np.array([], dtype=int)
+    connectivity_ph = _mc_ph_to_vtk_fast(
+        connectivity[offsets[ind_l] : offsets[ind_r]],
+        offsets=offsets[ind_l : ind_r + 1] - offsets[ind_l],
+    )
 
     # Combination
     connectivity = np.r_[connectivity_npl, connectivity_npr, connectivity_ph]
