@@ -1,74 +1,99 @@
 # MEDCoupling Tutorials
 
-This git repository contains python tutorials and scripts illustrating the use
-of the MEDCoupling library.
+Welcome to the **MEDCoupling Tutorials** repository. This project provides
+learning materials and practical examples to help you get started with
+MEDCoupling and explore its capabilities.
 
-You can find in the "tutorials" folder some tutorials and explanations for
-several topics. Jupyter-lab should be used for `.ipynb` extension files.
+## Repository Contents
 
-# Using tutorials
+This repository is organized as follows:
+
+- **Course slides (source)**: `./presentations/src`
+- **Course slides (PDF)**: `./presentations/install`
+- **Jupyter notebook tutorials**: `./tutorials`
+- **Visualization utilities**: `./src/medcoupling_tutos/`
+  - Includes helper tools to convert MEDCoupling meshes and fields into
+    `pyvista` objects for inline visualization in notebooks.
+
+---
 
 ## Installation
 
-### Git LFS
+You have two main options:
 
-This repository uses `git-lfs` to handle large files (mainly pictures). In order to clone this repository with git, be sure to have `git-lfs` installed on your computer. Additional information may be found [here](https://github.com/git-lfs/git-lfs?utm_source=gitlfs_site&utm_medium=installation_link&utm_campaign=gitlfs#installing).
+1. **Use MEDCoupling via Salome** and manually install the required Python
+   dependencies (`numpy`, `jupyterlab`, `pyvista`, etc.).
+2. **Use the simplified setup below** (recommended), which relies on `uv` for
+   environment and dependency management.
 
-## Set runtime environment
+---
 
-Working in a MEDCoupling environment is required. For that, you should do the
-following:
+## Quick Installation (Recommended)
 
-- For a `TRUST` user:
+### Linux
 
-  ```bash
-  source env_for_python.sh
-  ```
+#### Requirements
 
-- For a `Salome` user:
+Most distributions already include:
 
-  ```bash
-  salome context
-  ```
+- `curl`
+- `git`
 
-- Installing other python packages:
+#### Steps
 
-  The recommended way to install new packages is to create a virtual
-  environment. The downside is that it will hide all system packages by
-  default. To install it run:
+```sh
+# Install uv (fast Python package and environment manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-  ```bash
-  python -m venv venv
-  source venv/bin/activate
-  pip install -U pip
-  pip install mynewpypackage
-  ```
+# Clone the repository
+git clone https://github.com/SalomePlatform/MEDCoupling_tutos.git
+cd MEDCoupling_tutos
 
-  As system packages will be hidden, in some configurations (native
-  medcoupling/salome), numpy and scipy need to be installed in this
-  environment. A `requirements.txt` file is provided which lists needed
-  packages:
-
-  ```bash
-  source venv/bin/activate
-  pip install -r requirements.txt
-  ```
-
-## Run a tutorial
-
-- Activate the MEDCoupling environment
-- `cd tutorials`
-- Launch `jupyter-notebook` or `jupyter-lab`
-- Enjoy MEDCoupling !
-
-# Contributing
-
-## Check environnement and all notebooks
-
-To check all notebooks are running correctly, after having initialized the environment, please run:
-
-```bash
-source venv/bin/activate
-pip install -r requirements-dev.txt
-pytest --nbval
+# Create environment and install dependencies
+uv sync --python 3.12
 ```
+
+---
+
+### Windows
+
+#### Requirements
+
+- `git` (must be installed beforehand)
+
+#### Steps
+
+Install `uv`:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Clone the repository and install dependencies:
+
+```sh
+git clone https://github.com/SalomePlatform/MEDCoupling_tutos.git
+cd MEDCoupling_tutos
+
+uv sync --python 3.12
+```
+
+---
+
+## Launching the Tutorials
+
+Start JupyterLab to explore the notebooks:
+
+```sh
+cd tutorials
+uv run jupyter-lab
+```
+
+Then open the notebooks from your browser and follow the tutorials interactively.
+
+---
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests to
+improve tutorials, fix bugs, or extend functionality.
