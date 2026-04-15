@@ -1320,6 +1320,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "nbclient" },
     { name = "nbconvert" },
     { name = "nbstripout" },
     { name = "nbval" },
@@ -1337,6 +1338,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "nbclient", specifier = ">=0.10.2" },
     { name = "nbconvert", specifier = ">=7.16.6" },
     { name = "nbstripout", specifier = ">=0.8.1" },
     { name = "nbval", specifier = ">=0.11.0" },
