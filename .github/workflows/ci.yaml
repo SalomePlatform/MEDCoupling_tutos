@@ -12,9 +12,16 @@ jobs:
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libosmesa6-dev
+
       - name: Install deps
         run: uv sync --python 3.12
 
       - name: Execute notebooks
         run: |
-          uv run python -m nbclient --execute tutorials/*/*.ipynb
+          find tutorials/ -name '*.ipynb' -execdir sed -i \
+            's/pv\.set_jupyter_backend.*/pv.set_jupyter_backend(\\"none\\")\\n",\n"pv.OFF_SCREEN = True"/' \{} \;
+          find tutorials/ -name '*.ipynb' | xargs uv run jupyter execute
