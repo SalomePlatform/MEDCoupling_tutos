@@ -4,6 +4,11 @@ Welcome to the **MEDCoupling Tutorials** repository. This project provides
 learning materials and practical examples to help you get started with
 MEDCoupling and explore its capabilities.
 
+These tutorials are designed to be used alongside the [MEDCoupling reference
+manual](https://docs.salome-platform.org/latest/dev/MEDCoupling/developer/index.html),
+which provides the full API documentation and detailed descriptions of
+available methods.
+
 ## Repository Contents
 
 This repository is organized as follows:
@@ -90,6 +95,9 @@ uv run jupyter-lab
 ```
 
 Then open the notebooks from your browser and follow the tutorials interactively.
+You should use the [MEDCoupling
+documentation](https://docs.salome-platform.org/latest/dev/MEDCoupling/developer/index.html)
+alongside the tutorials.
 
 ---
 
