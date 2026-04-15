@@ -17,4 +17,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["nbstripout>=0.8.1", "nbval>=0.11.0", "pytest>=8.3.5"]
+dev = [
+    "nbconvert>=7.16.6",
+    "nbstripout>=0.8.1",
+    "nbval>=0.11.0",
+    "pytest>=8.3.5",
+]
