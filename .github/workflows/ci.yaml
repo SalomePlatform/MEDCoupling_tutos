@@ -24,4 +24,4 @@ jobs:
         run: |
           find tutorials/ -name '*.ipynb' -execdir sed -i \
             's/pv\.set_jupyter_backend.*/pv.set_jupyter_backend(\\"none\\")\\n",\n"pv.OFF_SCREEN = True"/' \{} \;
-          find tutorials/ -name '*.ipynb' | xargs uv run jupyter execute
+          find tutorials/ -name '*.ipynb' ! -name '*_exercise.ipynb' | xargs uv run jupyter execute
